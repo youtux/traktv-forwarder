@@ -39,7 +39,7 @@ def index():
     return """
 <a href="/login">Log in using trak.tv</a>
 <br>
-<a href="http://trakt.tv/dashboard">Log out</a>"""
+<a href="http://trakt.tv/logout">Log out</a>"""
 
 
 @app.route('/login<:re:/?>')
