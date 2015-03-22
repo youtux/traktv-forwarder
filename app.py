@@ -36,8 +36,10 @@ redirect_uri = BASE_URL + "success"
 
 @app.route('/')
 def index():
-    app.redirect("/login")
-    # return '<a href="/login">Log in using traktv</a>'
+    return """
+<a href="/login">Log in using trak.tv</a>
+<br>
+<a href="http://trakt.tv/dashboard">Log out</a>"""
 
 
 @app.route('/login<:re:/?>')
