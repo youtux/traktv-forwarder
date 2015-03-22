@@ -5,7 +5,6 @@
 import json
 import urllib
 import os
-from sys import argv
 
 import bottle as app
 import rauth
@@ -16,13 +15,12 @@ TRAKTV_CLIENT_ID = os.environ.get("TRAKTV_CLIENT_ID")
 TRAKTV_CLIENT_SECRET = os.environ.get("TRAKTV_CLIENT_SECRET")
 PORT = os.environ.get("PORT", 8080)
 
-print "url:", os.environ.get("WEB_URL")
-print "env:", os.environ
+BASE_URL = "http://traktv-forwarder.herokuapp.com/"
 
 oauth2 = rauth.OAuth2Service
 traktv = oauth2(
-    client_id=config.TRAKTV_CLIENT_ID,
-    client_secret=config.TRAKTV_CLIENT_SECRET,
+    client_id=TRAKTV_CLIENT_ID,
+    client_secret=TRAKTV_CLIENT_SECRET,
     name='traktv',
     authorize_url='https://api-v2launch.trakt.tv/oauth/authorize',
     access_token_url="https://api-v2launch.trakt.tv/oauth/token",
@@ -33,7 +31,7 @@ common_headers = {
     "trakt-api-key": TRAKTV_CLIENT_ID,
 }
 
-redirect_uri = config.BASE_URL + "success"
+redirect_uri = BASE_URL + "success"
 
 
 @app.route('/')
@@ -96,8 +94,8 @@ def login_success():
 
 if __name__ == "__main__":
     app.run(
-        server=config.SERVER,
         port=PORT,
-        host=config.HOST,
-        # debug=True,
+        host="0.0.0.0",
+        debug=True,
+        reloader=True,
     )
