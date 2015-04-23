@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
 import json
 import urllib
 import os
@@ -9,13 +8,17 @@ import os
 import bottle as app
 import rauth
 
+from pin_database import PinDatabase
+
 # import config
 
-TRAKTV_CLIENT_ID = os.environ.get("TRAKTV_CLIENT_ID", "")
-TRAKTV_CLIENT_SECRET = os.environ.get("TRAKTV_CLIENT_SECRET", "")
-PORT = os.environ.get("PORT", 8080)
+TRAKTV_CLIENT_ID = os.environ["TRAKTV_CLIENT_ID"]
+TRAKTV_CLIENT_SECRET = os.environ["TRAKTV_CLIENT_SECRET"]
+PEBBLE_TIMELINE_API_KEY = os.environ["PEBBLE_TIMELINE_API_KEY"]
+MONGODB_URL = os.environ["MONGODB_URL"]
+PORT = os.environ["PORT"]
 
-BASE_URL = "http://traktv-forwarder.herokuapp.com/"
+TRAKTTV_BASE_URL = "http://traktv-forwarder.herokuapp.com"
 
 oauth2 = rauth.OAuth2Service
 traktv = oauth2(
@@ -31,7 +34,9 @@ common_headers = {
     "trakt-api-key": TRAKTV_CLIENT_ID,
 }
 
-redirect_uri = BASE_URL + "success"
+redirect_uri = TRAKTTV_BASE_URL + "/success"
+
+pin_db = PinDatabase(MONGODB_URL)
 
 
 @app.route('/')
@@ -73,8 +78,41 @@ def login_success():
 
     app.redirect(redirect)
 
+
+@app.route('/api/getLaunchData/<launch_code:int>')
+def get_launch_data(launch_code):
+    """{action: "check-in", episode: {}}"""
+    """{action: "mark-as-seen", episode: {}}"""
+    # Fetch pin from database
+    try:
+        pin_obj = pin_db.pin_for_launch_code(launch_code)
+    except KeyError as e:
+        return json.dumps({'error': str(e)})
+
+    pin, metadata = pin_obj['pin'], pin_obj['metadata']
+
+    episode_id = metadata['episodeID']
+
+    for pin_action in pin['actions']:
+        if pin_action['launchCode'] == launch_code:
+            break
+    if pin_action["title"] == "Mark as seen":
+        action = "markAsSeen"
+    elif pin_action["title"] == "Check-in":
+        action = "checkIn"
+    else:
+        raise ValueError("Pin action unknown")
+
+    return json.dumps({
+        'episodeID': metadata['episodeID'],
+        'action': action,
+    })
+
+    return json.dumps({episode_id: episode_id})
+
 if __name__ == "__main__":
     app.run(
+        server='cherrypy',
         port=PORT,
         host="0.0.0.0",
         debug=True,
