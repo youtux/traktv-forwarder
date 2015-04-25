@@ -86,7 +86,7 @@ def fetch_shows_and_send_pins():
         return
 
     pin_ids_already_sent = pins_db.all_pin_ids()
-
+    #TODO use pebble (on pypi, nothing to do with this file)
     pin_insertion_results = []
 
     for ep_schedule in calendar:

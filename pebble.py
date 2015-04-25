@@ -1,7 +1,7 @@
 import logging
 
 from requests_futures.sessions import FuturesSession
-
+#TODO use pebble (on pypi, nothing to do with this file)
 
 class Timeline(object):
     TIMELINE_BASE_URL = "https://timeline-api.getpebble.com"

@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import json
-import urllib
 import os
 
 import bottle as app
 import rauth
+
+from six.moves.urllib import parse
 
 from pin_database import PinDatabase
 
@@ -57,6 +58,11 @@ def login():
     app.redirect(url)
 
 
+def json_dec(s):
+    if isinstance(s, bytes):
+        s = s.decode('utf8')
+    return json.loads(s)
+
 @app.route('/success<:re:/?>')
 def login_success():
     if app.request.params.get('error'):
@@ -69,11 +75,11 @@ def login_success():
             redirect_uri=redirect_uri,
             grant_type='authorization_code'
         ),
-        decoder=json.loads
+        decoder=json_dec
     )
     payload = {'accessToken': access_token}
     print("Access token:", access_token)
-    redirect = "pebblejs://close#" + urllib.quote(json.dumps(payload))
+    redirect = "pebblejs://close#" + parse.quote(json.dumps(payload))
     print("Redirecting to: ", redirect)
 
     app.redirect(redirect)
@@ -116,5 +122,5 @@ if __name__ == "__main__":
         port=PORT,
         host="0.0.0.0",
         debug=True,
-        reloader=True,
+        # reloader=True,
     )
